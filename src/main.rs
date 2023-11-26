@@ -10,15 +10,14 @@ use sqlx::postgres::PgPoolOptions;
 mod cors;
 mod handlers;
 mod models;
+mod persistance;
 
 use cors::*;
 use handlers::*;
 
 #[launch]
 async fn rocket() -> _ {
-    // TODO: Initialize pretty_env_logger
     pretty_env_logger::init();
-    // TODO: Initialize dotenv
     dotenv().ok().expect("Failed to read .env file");
 
     // Create a new PgPoolOptions instance with a maximum of 5 connections.
@@ -37,7 +36,6 @@ async fn rocket() -> _ {
         .fetch_all(&pool).await.unwrap();
 
     info!("********* Question Records *********");
-    // TODO: Log recs with debug formatting using the info! macro
     info!("{:?}", recs);
 
     rocket::build()

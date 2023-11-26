@@ -1407,6 +1407,7 @@ dependencies = [
 name = "rust-stackoverflow-api"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "dotenvy",
  "lazy_static",
  "log",
@@ -1414,6 +1415,7 @@ dependencies = [
  "rocket",
  "serde",
  "sqlx",
+ "thiserror",
  "tokio",
 ]
 
