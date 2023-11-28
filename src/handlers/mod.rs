@@ -1,87 +1,84 @@
-use lazy_static::lazy_static;
-use std::sync::Mutex;
+use rocket::{serde::json::Json, State};
 
-use rocket::{serde::json::Json};
+use crate::{models::*, persistance::{questions_dao::QuestionsDao, answers_dao::AnswersDao}};
 
-use crate::models::*;
+mod handlers_inner;
 
-struct TempDB {
-    questions: Vec<QuestionDetail>,
-    answers: Vec<AnswerDetail>,
-}
-
-lazy_static! {
-    static ref DB: Mutex<TempDB> = Mutex::new(TempDB {
-        questions: Vec::new(),
-        answers: Vec::new(),
-    });
-}
 // ---- CRUD for Questions ----
 
 #[post("/question", data = "<question>")]
 pub async fn create_question(
     question: Json<Question>,
+    questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
 ) -> Json<QuestionDetail> {
-    let mut db = DB.lock().unwrap();
-    let new_question = QuestionDetail {
-        question_uuid: "123".to_string(),
-        title: question.title.clone(),
-        description: question.description.clone(),
-        created_at: "2021-08-25T00:00:00Z".to_string(),
-    };
-    db.questions.push(QuestionDetail {
-        question_uuid: "123".to_string(),
-        title: question.title.clone(),
-        description: question.description.clone(),
-        created_at: "2021-08-25T00:00:00Z".to_string(),
-    });
-    Json(new_question)
+    Json (
+        QuestionDetail {
+            question_uuid: "question_uuid".to_owned(),
+            title: "title".to_owned(),
+            description: "description".to_owned(),
+            created_at: "created_at".to_owned()
+        }
+    )
 }
 
 #[get("/questions")]
-pub async fn read_questions() -> Json<Vec<QuestionDetail>> {
-    let db = DB.lock().unwrap();
-    Json(db.questions.clone())
+pub async fn read_questions(
+    questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>, // add the appropriate type annotation
+) -> Json<Vec<QuestionDetail>> {
+    Json (
+        vec![QuestionDetail {
+            question_uuid: "question_uuid".to_owned(),
+            title: "title".to_owned(),
+            description: "description".to_owned(),
+            created_at: "created_at".to_owned()
+        }]
+    )
 }
 
 #[delete("/question", data = "<question_uuid>")]
 pub async fn delete_question(
-    question_uuid: Json<QuestionId>
+    question_uuid: Json<QuestionId>,
+    questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>, // add the appropriate type annotation
 ) {
-    let mut db = DB.lock().unwrap();
-    db.questions.retain(|q| q.question_uuid != question_uuid.question_uuid);
+    // ...
 }
 
 // ---- CRUD for Answers ----
 
 #[post("/answer", data = "<answer>")]
-pub fn create_answer(
+pub async fn create_answer(
     answer: Json<Answer>,
-) -> Json<Vec<AnswerDetail>> {
-    let mut db = DB.lock().unwrap();
-    let new_answer = AnswerDetail {
-        answer_uuid: "123".to_string(),
-        question_uuid: answer.question_uuid.clone(),
-        content: answer.content.clone(),
-        created_at: "2021-08-25T00:00:00Z".to_string(),
-    };
-    db.answers.push(new_answer.clone());
-    Json(vec![new_answer])
+    answers_dao: &State<Box<dyn AnswersDao + Send + Sync>>,
+) -> Json<AnswerDetail> {
+    Json (
+        AnswerDetail {
+            answer_uuid: "answer_uuid".to_owned(),
+            question_uuid: "question_uuid".to_owned(),
+            content: "content".to_owned(),
+            created_at: "created_at".to_owned()
+        }
+    )
 }
 
 #[get("/answers", data = "<question_uuid>")]
-pub fn read_answers(
-    question_uuid: Json<QuestionId>
+pub async fn read_answers(
+    question_uuid: Json<QuestionId>,
+    answers_dao: &State<Box<dyn AnswersDao + Send + Sync>>, // add the appropriate type annotation
 ) -> Json<Vec<AnswerDetail>> {
-    let db = DB.lock().unwrap();
-    let answers = db.answers.clone();
-    Json(answers.into_iter().filter(|a| a.question_uuid == question_uuid.question_uuid).collect())
+    Json (
+        vec![AnswerDetail {
+            answer_uuid: "answer_uuid".to_owned(),
+            question_uuid: "question_uuid".to_owned(),
+            content: "content".to_owned(),
+            created_at: "created_at".to_owned()
+        }]
+    )
 }
 
 #[delete("/answer", data = "<answer_uuid>")]
-pub fn delete_answer(
-    answer_uuid: Json<AnswerId>
+pub async fn delete_answer(
+    answer_uuid: Json<AnswerId>,
+    answers_dao: &State<Box<dyn AnswersDao + Send + Sync>>, // add the appropriate type annotation
 ) {
-    let mut db = DB.lock().unwrap();
-    db.answers.retain(|a| a.answer_uuid != answer_uuid.answer_uuid);
+    // ...
 }
