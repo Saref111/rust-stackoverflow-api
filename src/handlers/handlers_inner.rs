@@ -118,6 +118,7 @@ mod tests {
         create_question_response: Mutex<Option<Result<QuestionDetail, DBError>>>,
         delete_question_response: Mutex<Option<Result<(), DBError>>>,
         get_questions_response: Mutex<Option<Result<Vec<QuestionDetail>, DBError>>>,
+        update_question_response: Mutex<Option<Result<QuestionDetail, DBError>>>,
     }
 
     impl QuestionsDaoMock {
@@ -126,6 +127,7 @@ mod tests {
                 create_question_response: Mutex::new(None),
                 delete_question_response: Mutex::new(None),
                 get_questions_response: Mutex::new(None),
+                update_question_response: Mutex::new(None),
             }
         }
         pub fn mock_create_question(&mut self, response: Result<QuestionDetail, DBError>) {
@@ -136,6 +138,9 @@ mod tests {
         }
         pub fn mock_get_questions(&mut self, response: Result<Vec<QuestionDetail>, DBError>) {
             self.get_questions_response = Mutex::new(Some(response));
+        }
+        pub fn mock_update_question(&mut self, response: Result<QuestionDetail, DBError>) {
+            self.update_question_response = Mutex::new(Some(response));
         }
     }
 
@@ -162,12 +167,20 @@ mod tests {
                 .take()
                 .expect("get_questions_response should not be None.")
         }
+        async fn update_question(&self, updated_question: Question, question_uuid: String) -> Result<QuestionDetail, DBError> {
+            self.update_question_response
+                .lock()
+                .await
+                .take()
+                .expect("get_questions_response should not be None.")
+        }
     }
 
     struct AnswersDaoMock {
         create_answer_response: Mutex<Option<Result<AnswerDetail, DBError>>>,
         delete_answer_response: Mutex<Option<Result<(), DBError>>>,
         get_answers_response: Mutex<Option<Result<Vec<AnswerDetail>, DBError>>>,
+        update_answer_response: Mutex<Option<Result<AnswerDetail, DBError>>>,
     }
 
     impl AnswersDaoMock {
@@ -176,6 +189,7 @@ mod tests {
                 create_answer_response: Mutex::new(None),
                 delete_answer_response: Mutex::new(None),
                 get_answers_response: Mutex::new(None),
+                update_answer_response: Mutex::new(None),
             }
         }
         pub fn mock_create_answer(&mut self, response: Result<AnswerDetail, DBError>) {
@@ -186,6 +200,9 @@ mod tests {
         }
         pub fn mock_get_answers(&mut self, response: Result<Vec<AnswerDetail>, DBError>) {
             self.get_answers_response = Mutex::new(Some(response));
+        }
+        pub fn mock_update_question(&mut self, response: Result<AnswerDetail, DBError>) {
+            self.update_answer_response = Mutex::new(Some(response));
         }
     }
 
@@ -211,6 +228,13 @@ mod tests {
                 .await
                 .take()
                 .expect("get_answers_response should not be None.")
+        }
+        async fn update_answer(&self, _: Answer, _: String) -> Result<AnswerDetail, DBError> {
+            self.update_answer_response
+                .lock()
+                .await
+                .take()
+                .expect("update_answer_response should not be None.")
         }
     }
 
