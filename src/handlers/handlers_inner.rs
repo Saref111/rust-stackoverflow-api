@@ -17,7 +17,6 @@ impl HandlerError {
 
 pub async fn create_question(
     question: Question,
-    // We are using a trait object here so that inner handlers do not depend on concrete DAO implementations
     questions_dao: &Box<dyn QuestionsDao + Sync + Send>,
 ) -> Result<QuestionDetail, HandlerError> {
     let question = questions_dao.create_question(question).await;
@@ -49,7 +48,7 @@ pub async fn delete_question(
     question_uuid: QuestionId,
     questions_dao: &Box<dyn QuestionsDao + Sync + Send>,
 ) -> Result<(), HandlerError> {
-    let result = questions_dao.delete_question(question_uuid).await;
+    let result = questions_dao.delete_question(question_uuid.question_uuid).await;
 
     if result.is_err() {
         return Err(HandlerError::default_internal_error());
@@ -81,7 +80,7 @@ pub async fn read_answers(
     question_uuid: QuestionId,
     answers_dao: &Box<dyn AnswersDao + Send + Sync>,
 ) -> Result<Vec<AnswerDetail>, HandlerError> {
-    let answers = answers_dao.get_answers(question_uuid).await;
+    let answers = answers_dao.get_answers(question_uuid.question_uuid).await;
 
     match answers {
         Ok(answers) => Ok(answers),
@@ -96,7 +95,7 @@ pub async fn delete_answer(
     answer_uuid: AnswerId,
     answers_dao: &Box<dyn AnswersDao + Send + Sync>,
 ) -> Result<(), HandlerError> {
-    let result = answers_dao.delete_answer(answer_uuid).await;
+    let result = answers_dao.delete_answer(answer_uuid.answer_uuid).await;
 
     if result.is_err() {
         return Err(HandlerError::default_internal_error()); 
