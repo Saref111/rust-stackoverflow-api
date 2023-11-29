@@ -1,4 +1,4 @@
-use rocket::{serde::json::Json, State, fairing::Fairing};
+use rocket::{serde::json::Json, State};
 
 use crate::{models::*, persistance::{questions_dao::QuestionsDao, answers_dao::AnswersDao}};
 
@@ -53,6 +53,20 @@ pub async fn delete_question(
     Ok(())
 }
 
+#[put("/question", data = "<update_request>")]
+pub async fn update_question(
+    update_request: Json<UpdateRequest<Question>>,
+    questions_dao: &State<Box<dyn QuestionsDao + Sync + Send>>,
+) -> Result<Json<QuestionDetail>, APIError> {
+    let updated_question = Question { 
+        title: update_request.updated_entity.title.to_owned(), 
+        description: update_request.updated_entity.description.to_owned() 
+    };
+    let question_detail = handlers_inner::update_question(updated_question, update_request.uuid.to_owned(), questions_dao).await
+                                        .map_err(|e| Into::<APIError>::into(e))?;
+    Ok(Json(question_detail))
+}
+
 // ---- CRUD for Answers ----
 
 #[post("/answer", data = "<answer>")]
@@ -83,4 +97,18 @@ pub async fn delete_answer(
     handlers_inner::delete_answer(answer_uuid.0, answers_dao).await
                     .map_err(|e| Into::<APIError>::into(e))?;
     Ok(())
+}
+
+#[put("/answer", data = "<update_request>")]
+pub async fn update_answer(
+    update_request: Json<UpdateRequest<Answer>>,
+    answers_dao: &State<Box<dyn AnswersDao + Send + Sync>>, 
+) -> Result<Json<AnswerDetail>, APIError> {
+    let updated_answer = Answer { 
+        question_uuid: update_request.updated_entity.question_uuid.to_owned(), 
+        content: update_request.updated_entity.content.to_owned() 
+    };
+    let answer_detail = handlers_inner::update_answer(updated_answer, update_request.uuid.to_owned(), answers_dao).await
+                                                            .map_err(|e| Into::<APIError>::into(e))?;
+    Ok(Json(answer_detail))
 }

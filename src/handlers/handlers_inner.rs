@@ -57,6 +57,24 @@ pub async fn delete_question(
     Ok(())
 }
 
+pub async fn update_question(
+    updated_question: Question,
+    uuid: String,
+    questions_dao: &Box<dyn QuestionsDao + Sync + Send>,
+) -> Result<QuestionDetail, HandlerError> {
+    let question = questions_dao
+        .update_question(updated_question, uuid)
+        .await;
+
+    match question {
+        Ok(question) => Ok(question),
+        Err(err) => {
+            error!("{}", err);
+            Err(HandlerError::default_internal_error())
+        }
+    }
+}
+
 pub async fn create_answer(
     answer: Answer,
     answers_dao: &Box<dyn AnswersDao + Send + Sync>,
@@ -107,6 +125,22 @@ pub async fn delete_answer(
 // ***********************************************************
 //                           Tests 
 // ***********************************************************
+
+pub async fn update_answer(
+    updated_answer: Answer,
+    uuid: String,
+    answers_dao: &Box<dyn AnswersDao + Sync + Send>,
+) -> Result<AnswerDetail, HandlerError> {
+    let answer = answers_dao.update_answer(updated_answer, uuid).await;
+
+    match answer {
+        Ok(answer) => Ok(answer),
+        Err(err) => {
+            error!("{}", err);
+            Err(HandlerError::default_internal_error())
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,11 @@
 use thiserror::Error;
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct UpdateRequest<T> {
+    pub updated_entity: T,
+    pub uuid: String,
+}
 #[derive(Serialize, Deserialize)]
 pub struct Question {
     pub title: String,
@@ -22,7 +27,7 @@ pub struct QuestionId {
 
 // ----------
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Clone)]
 pub struct Answer {
     pub question_uuid: String,
     pub content: String,

@@ -40,9 +40,11 @@ async fn rocket() -> _ {
                 create_question,
                 read_questions,
                 delete_question,
+                update_question,
                 create_answer,
                 read_answers,
-                delete_answer
+                delete_answer,
+                update_answer,
             ],
         )
         .attach(CORS)
